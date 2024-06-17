@@ -27,12 +27,15 @@ def get_LJparameters(u, scale=1.0):
     """
     return: nonlinear mapping of LJ  parameters
     """
+    print(u)
     u = u / np.mean(u)  # normalize u
+    print(u)
     b = np.array(u) * scale  # get bij scaled by constant (input)
     eps_LJ = np.zeros(u.shape)
     for i in range(u.shape[0]):
         for j in range(i, u.shape[1]):
             eps_LJ[i, j] = eps_LJ[j, i] = get_epsij_from_bij(b[i, j])
+    print(eps_LJ)
     return -eps_LJ
 
 
@@ -96,14 +99,18 @@ if __name__ == "__main__":
 
     summary = {}
     volume = clargs.Lx**2 * clargs.Lz
+    print(volume)
     vi = np.pi / 6  # sigma = 1 for LJ beads
     landscape_test = None
     if clargs.mode == "fullrank":
         with gzip.open(clargs.path, "rb") as f:
             results = pickle.load(f)
-            L = int(results["L"])
+            # L = int(results["L"])
+            L = 15.0
             K, N = results["targets"].shape
             targets = results["targets"]
+            print("below")
+            print(results["eps"].matrix())
             W, u = np.diag([L] * N), -results["eps"].matrix() / L**2
             landscape_test = (
                 results["test_results_targets"]["success"]
@@ -134,6 +141,7 @@ if __name__ == "__main__":
     K = phisp.shape[0]
     all_sequences = []
     components = {}
+
     for k in range(N):
         row = W[k]
         seq = makeseq(row)
@@ -165,11 +173,19 @@ if __name__ == "__main__":
     summary["components"] = components
     summary["phases"] = phases
     summary["target_box_dim"] = (clargs.Lx, clargs.Lx, clargs.Lz)
+
     with open(clargs.output_summary, "w") as pout:
         json.dump(summary, pout, indent=2)
 
+    # print(summary)
+
     # generate pair coefficents
+    # print(u)
+    print(clargs.eps_scale, "hello")
     u_eff = get_LJparameters(u, clargs.eps_scale)
+
+    # print(clargs.eps_scale)
+    # print(u_eff)
     with open(clargs.output_paircoeff, "w") as fout:
         for i in range(r):
             for j in range(i, r):

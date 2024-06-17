@@ -27,7 +27,9 @@ def get_LJparameters(u, scale=1.0):
     """
     return: nonlinear mapping of LJ  parameters
     """
+    print(u)
     u = u / np.mean(u)  # normalize u
+    print(u)
     b = np.array(u) * scale  # get bij scaled by constant (input)
     eps_LJ = np.zeros(u.shape)
     for i in range(u.shape[0]):
@@ -101,10 +103,15 @@ if __name__ == "__main__":
     if clargs.mode == "fullrank":
         with gzip.open(clargs.path, "rb") as f:
             results = pickle.load(f)
-            L = int(results["L"])
+            # print(results)
+            # L = int(results["L"])
+            L = 25.0
             K, N = results["targets"].shape
             targets = results["targets"]
             W, u = np.diag([L] * N), -results["eps"].matrix() / L**2
+            print("below")
+            print(results["eps"].matrix())
+            print(W)
             landscape_test = (
                 results["test_results_targets"]["success"]
                 and results["test_results_dilute"]["success"]
@@ -170,10 +177,12 @@ if __name__ == "__main__":
 
     # generate pair coefficents
     u_eff = get_LJparameters(u, clargs.eps_scale)
+    # print(u_eff)
+    # print("hello")
     with open(clargs.output_paircoeff, "w") as fout:
         for i in range(r):
             for j in range(i, r):
                 fout.write(
-                    "pair_coeff      %d %d %.3f 1.0 3.0 \n"
+                    "pair_coeff      %d %d %.3f 1.0 3.0\n"
                     % (i + 1, j + 1, u_eff[i, j])
                 )
